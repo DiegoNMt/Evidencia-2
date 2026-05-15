@@ -1,53 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halcón System</title>
-</head>
-<body>
-    <h1>Halcón System</h1>
+@extends('layouts.app')
 
-    <h2>Search Order by Invoice Number</h2>
+@section('content')
 
-    <form action="{{ route('orders.search') }}" method="GET">
-        <label for="invoice_number">Invoice #:</label>
-        <input type="text" name="invoice_number" id="invoice_number" required>
-        <button type="submit">Search</button>
-    </form>
+@php
+    use Illuminate\Support\Str;
+@endphp
 
-    <hr>
+<div class="container-fluid">
 
-    @if(isset($order))
-        @if($order)
-            <h3>Order Found</h3>
+    <div class="row justify-content-center mt-5">
 
-            <p><strong>Invoice Number:</strong> {{ $order->invoice_number }}</p>
-            <p><strong>Status:</strong> {{ $order->status }}</p>
-            <p><strong>Date:</strong> {{ $order->order_date }}</p>
+        <div class="col-md-6">
 
-            @if($order->status === 'Delivered')
-                <h4>Delivered Photo</h4>
+            {{-- Search Card --}}
+            <div class="card shadow-sm mb-4">
 
-                @php
-                    $deliveredPhoto = $order->photos->where('photo_type', 'unloaded')->first();
-                @endphp
+                <div class="card-header">
+                    <strong>Search Order by Invoice Number</strong>
+                </div>
 
-                @if($deliveredPhoto)
-                    <img src="{{ asset('storage/' . $deliveredPhoto->photo_path) }}" alt="Delivered Photo" width="300">
-                @else
-                    <p>No delivered photo available.</p>
-                @endif
-            @elseif($order->status === 'In process')
-                <h4>Process Information</h4>
-                <p>Process name: {{ $order->status }}</p>
-                <p>Date: {{ $order->order_date }}</p>
-            @else
-                <p>No special information for this status.</p>
+                <div class="card-body">
+
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('orders.search') }}" method="GET">
+
+                        <div class="mb-3">
+                            <label class="form-label">Invoice Number</label>
+                            <input type="text" name="invoice_number" class="form-control" placeholder="Enter invoice number" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Search</button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {{-- Result Card --}}
+            @if(isset($order))
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header">Order Result</div>
+                    <div class="card-body">
+                        <p><strong>Invoice:</strong> {{ $order->invoice_number }}</p>
+                        <p><strong>Customer:</strong> {{ $order->customer->name ?? 'N/A' }}</p>
+                        <p><strong>Status:</strong> {{ $order->status }}</p>
+                        <p><strong>Order Date:</strong> {{ $order->order_date }}</p>
+                        <p><strong>Description:</strong> {{ $order->description }}</p>
+                        {{-- ROUTE PHOTO --}}
+                        @if($order->route_photo)
+
+                            <div class="mt-4">
+
+                                <h5>Route Evidence</h5>
+
+                                @if(Str::startsWith($order->route_photo, 'http'))
+
+                                    <img
+                                        src="{{ $order->route_photo }}"
+                                        class="img-fluid rounded border"
+                                        style="max-width: 100%; max-height: 300px;"
+                                    >
+
+                                @else
+
+                                    <img
+                                        src="{{ asset('storage/' . $order->route_photo) }}"
+                                        class="img-fluid rounded border"
+                                        style="max-width: 100%; max-height: 300px;"
+                                    >
+
+                                @endif
+
+                            </div>
+
+                        @endif
+
+
+                        {{-- EVIDENCE PHOTOS --}}
+                        @if($order->photos->count())
+
+                            <hr>
+
+                            <h5 class="mb-3">
+                                Evidence Photos
+                            </h5>
+
+                            <div class="row">
+
+                                @foreach($order->photos as $photo)
+
+                                    <div class="col-md-6 mb-4">
+
+                                        <div class="card">
+
+                                            <div class="card-header">
+
+                                                {{ ucfirst($photo->photo_type) }} Evidence
+
+                                            </div>
+
+                                            <div class="card-body text-center">
+
+                                                @if(Str::startsWith($photo->photo_path, 'http'))
+
+                                                    <img
+                                                        src="{{ $photo->photo_path }}"
+                                                        class="img-fluid rounded border"
+                                                        style="max-height: 250px; object-fit: cover;"
+                                                    >
+
+                                                @else
+
+                                                    <img
+                                                        src="{{ asset('storage/' . $photo->photo_path) }}"
+                                                        class="img-fluid rounded border"
+                                                        style="max-height: 250px; object-fit: cover;"
+                                                    >
+
+                                                @endif
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                @endforeach
+
+                            </div>
+
+                        @endif
+                    </div>
+                </div>
             @endif
-        @else
-            <p>Order not found.</p>
-        @endif
-    @endif
-</body>
-</html>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endsection

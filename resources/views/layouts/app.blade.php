@@ -36,22 +36,49 @@
             <button class="btn-close d-lg-none" type="button" data-coreui-theme="dark" aria-label="Close" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
         </div>
         
-        <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
-            <!-- Nav content -->
+        <ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
+
+            {{-- PUBLIC SEARCH --}}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/') }}">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('assets/icons/sprites/free.svg#cil-speedometer') }}"></use>
-                    </svg> Dashboard
+                <a class="nav-link" href="{{ route('home') }}">
+                    <i class="nav-icon cil-search"></i>
+                    Search
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('assets/icons/sprites/free.svg#cil-group') }}"></use>
-                    </svg> Usuarios
-                </a>
-            </li>
+
+            {{-- AUTHENTICATED USERS ONLY --}}
+            @auth
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('dashboard') }}">
+                        <i class="nav-icon cil-speedometer"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('users.index') }}">
+                        <i class="nav-icon cil-user"></i>
+                        Users
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('orders.index') }}">
+                        <i class="nav-icon cil-list"></i>
+                        Orders
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('orders.archived') }}">
+                        <i class="nav-icon cil-trash"></i>
+                        Archived Orders
+                    </a>
+                </li>
+
+            @endauth
+
         </ul>
         
         <div class="sidebar-footer border-top d-none d-md-flex">     
@@ -68,10 +95,6 @@
                         <use xlink:href="{{ asset('assets/icons/sprites/free.svg#cil-menu') }}"></use>
                     </svg>
                 </button>
-                
-                <ul class="header-nav d-none d-lg-flex">
-                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}">Inicio</a></li>
-                </ul>
 
                 <ul class="header-nav ms-auto">
                     @guest
@@ -120,13 +143,6 @@
                 </ul>
             </div>
             
-            <div class="container-fluid px-4">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb my-0">
-                        <li class="breadcrumb-item active"><span>Dashboard</span></li>
-                    </ol>
-                </nav>
-            </div>
         </header>
 
         <div class="body flex-grow-1">

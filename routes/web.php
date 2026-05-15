@@ -1,46 +1,96 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderPhotoController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/search', [HomeController::class, 'search'])->name('orders.search');
+// Public search page
+Route::get('/', [HomeController::class, 'index'])
+    ->name('home');
 
-// 1. Apunta a nuestra nueva interfaz de CoreUI
-/*Route::get('/login', [HomeController::class, 'dashboard'])
-    ->name('dashboard')
-    ->middleware('auth');*/
+// Public order search
+Route::get('/search', [HomeController::class, 'search'])
+    ->name('orders.search');
 
-// 2. Rutas del andamiaje de Autenticación (Login, Registro, Recuperación)
+/*
+|--------------------------------------------------------------------------
+| AUTH ROUTES
+|--------------------------------------------------------------------------
+*/
+
 Auth::routes();
 
-// 3. Ruta de inicio post-autenticación
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES
+|--------------------------------------------------------------------------
+*/
 
-// 4. Resource Routes for Users
-Route::resource('users', App\Http\Controllers\UserController::class)->middleware('auth');
+Route::middleware(['auth'])->group(function () {
 
-// 5. Resource Routes for orders y customers
-Route::resource('orders', OrderController::class);
-Route::resource('customers', CustomerController::class);
+    /*
+    |--------------------------------------------------------------------------
+    | DASHBOARD
+    |--------------------------------------------------------------------------
+    */
 
-Route::get('orders-deleted', [OrderController::class, 'deleted'])->name('orders.deleted');
-Route::post('orders/{id}/restore', [OrderController::class, 'restore'])->name('orders.restore');
-Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
-Route::post('orders/{orderId}/photos', [OrderPhotoController::class, 'store'])->name('orders.photos.store');
+    Route::get('/dashboard',
+        [HomeController::class, 'dashboard'])
+        ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    /*
+    |--------------------------------------------------------------------------
+    | USERS
+    |--------------------------------------------------------------------------
+    */
 
-    Route::resource('users', App\Http\Controllers\UserController::class);
+    Route::resource('users', UserController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ORDERS
+    |--------------------------------------------------------------------------
+    */
 
     Route::resource('orders', OrderController::class);
-    Route::get('orders-archived', [OrderController::class, 'archived'])->name('orders.archived');
-    Route::post('orders/{id}/restore', [OrderController::class, 'restore'])->name('orders.restore');
-    Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
-    Route::post('orders/{orderId}/photos', [OrderPhotoController::class, 'store'])->name('orders.photos.store');
+
+    // Archived Orders
+    Route::get('/orders-archived',
+        [OrderController::class, 'archived'])
+        ->name('orders.archived');
+
+    // Restore Archived Order
+    Route::post('/orders/{id}/restore',
+        [OrderController::class, 'restore'])
+        ->name('orders.restore');
+
+    // Change Status
+    Route::post('/orders/{id}/status',
+        [OrderController::class, 'changeStatus'])
+        ->name('orders.changeStatus');
+
+    // Upload Photos
+    Route::post('/orders/{orderId}/photos',
+        [OrderPhotoController::class, 'store'])
+        ->name('orders.photos.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | CUSTOMERS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::resource('customers', CustomerController::class);
+
 });

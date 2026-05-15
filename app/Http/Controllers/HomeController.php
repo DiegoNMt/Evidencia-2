@@ -32,13 +32,20 @@ class HomeController extends Controller
     public function search(Request $request)
     {
         $request->validate([
-            'invoice_number' => 'required|string'
+            'invoice_number' => 'required'
         ]);
 
-        $order = Order::with('photos')
+        $order = Order::with(['customer', 'photos'])
             ->where('invoice_number', $request->invoice_number)
             ->first();
 
+        if (!$order) {
+            return redirect()
+                ->back()
+                ->with('error', 'Invoice not found.');
+        }
+
+        // Instead of returning a non-existing view:
         return view('home', compact('order'));
     }
 
